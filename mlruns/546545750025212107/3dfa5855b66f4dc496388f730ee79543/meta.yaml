@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/narendra%20tekale/MLOPS%20Project/demand-forecasting-mlops/mlruns/546545750025212107/3dfa5855b66f4dc496388f730ee79543/artifacts
+end_time: 1778747124390
+entry_point_name: ''
+experiment_id: '546545750025212107'
+lifecycle_stage: active
+run_id: 3dfa5855b66f4dc496388f730ee79543
+run_name: nimble-tern-537
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778747081865
+status: 3
+tags: []
+user_id: narendra tekale

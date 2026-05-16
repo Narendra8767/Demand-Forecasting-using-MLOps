@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/narendra%20tekale/MLOPS%20Project/demand-forecasting-mlops/mlruns/546545750025212107/c375e0cc41c443e2a4ca0da9b4089323/artifacts
+end_time: 1778746964161
+entry_point_name: ''
+experiment_id: '546545750025212107'
+lifecycle_stage: active
+run_id: c375e0cc41c443e2a4ca0da9b4089323
+run_name: likeable-sow-678
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778746937416
+status: 3
+tags: []
+user_id: narendra tekale

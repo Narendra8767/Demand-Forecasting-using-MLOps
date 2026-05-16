@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/narendra%20tekale/MLOPS%20Project/demand-forecasting-mlops/mlruns/546545750025212107/296ef0ac185847468800ee923eb710ca/artifacts
+end_time: 1778747131136
+entry_point_name: ''
+experiment_id: '546545750025212107'
+lifecycle_stage: active
+run_id: 296ef0ac185847468800ee923eb710ca
+run_name: RandomForest
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778747125373
+status: 3
+tags: []
+user_id: narendra tekale

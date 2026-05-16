@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  # ------------------------------------------------------------------ #
+  #  FastAPI — Demand Forecasting API                                    #
+  # ------------------------------------------------------------------ #
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: demand-forecast-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./reports:/app/reports
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - PYTHONPATH=/app
+    depends_on:
+      - mlflow
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ------------------------------------------------------------------ #
+  #  MLflow Tracking Server                                              #
+  # ------------------------------------------------------------------ #
+  mlflow:
+    image: python:3.10-slim
+    container_name: mlflow-server
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlruns
+    command: >
+      bash -c "pip install mlflow==2.10.2 --quiet &&
+               mlflow server
+               --host 0.0.0.0
+               --port 5000
+               --backend-store-uri /mlruns
+               --default-artifact-root /mlruns"
+    restart: unless-stopped
+
+  # ------------------------------------------------------------------ #
+  #  Grafana — Metrics Dashboard (optional)                              #
+  # ------------------------------------------------------------------ #
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana-dashboard
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: unless-stopped
+
+volumes:
+  grafana_data:

@@ -1,0 +1,9 @@
+digest: 4a027c38
+name: validation_0
+profile: '{"features_shape": [29088, 43], "features_size": 1250784, "features_nbytes":
+  5003136}'
+schema: '{"mlflow_tensorspec": {"features": "[{\"type\": \"tensor\", \"tensor-spec\":
+  {\"dtype\": \"float32\", \"shape\": [-1, 43]}}]", "targets": null}}'
+source: '{"tags": {"mlflow.user": "narendra tekale", "mlflow.source.name": "src/models/train.py",
+  "mlflow.source.type": "LOCAL"}}'
+source_type: code

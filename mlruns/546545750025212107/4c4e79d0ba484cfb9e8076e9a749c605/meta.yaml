@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/narendra%20tekale/MLOPS%20Project/demand-forecasting-mlops/mlruns/546545750025212107/4c4e79d0ba484cfb9e8076e9a749c605/artifacts
+end_time: 1778747041426
+entry_point_name: ''
+experiment_id: '546545750025212107'
+lifecycle_stage: active
+run_id: 4c4e79d0ba484cfb9e8076e9a749c605
+run_name: XGBoost
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778747034364
+status: 3
+tags: []
+user_id: narendra tekale

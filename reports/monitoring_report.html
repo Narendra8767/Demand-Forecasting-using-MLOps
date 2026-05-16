@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Monitoring Report</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+  .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+  h1 { color: #1976D2; } h2 { color: #424242; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+  th { background: #1976D2; color: white; }
+  .alert { background: #FFEBEE; border-left: 4px solid #F44336; padding: 12px; }
+  .ok { background: #E8F5E9; border-left: 4px solid #4CAF50; padding: 12px; }
+</style>
+</head>
+<body>
+<h1>Demand Forecasting — Monitoring Report</h1>
+<p>Generated: 2026-05-14 08:41 UTC</p>
+
+<div class="card">
+  <h2>Data Drift Summary</h2>
+  <div class="ok">
+    <b>Drift Detected: NO ✅</b><br>
+    Drift Score: 0.1101 (threshold: 0.3)
+  </div>
+</div>
+
+<div class="card">
+  <h2>Target Distribution Comparison (Sales)</h2>
+  <table>
+    <tr><th>Statistic</th><th>Reference (Train)</th><th>Current (Test)</th></tr>
+    <tr><td>mean</td><td>263.78</td><td>234.75</td></tr><tr><td>std</td><td>181.90</td><td>162.54</td></tr><tr><td>min</td><td>12.00</td><td>13.00</td></tr><tr><td>25%</td><td>122.00</td><td>112.00</td></tr><tr><td>50%</td><td>211.00</td><td>188.00</td></tr><tr><td>75%</td><td>362.00</td><td>318.00</td></tr><tr><td>max</td><td>702.50</td><td>702.50</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>Reference Data Info</h2>
+  <p>Rows: 116,352 | Columns: 45</p>
+  <h2>Current Data Info</h2>
+  <p>Rows: 29,088 | Columns: 45</p>
+</div>
+</body>
+</html>

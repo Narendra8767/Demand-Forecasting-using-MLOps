@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/narendra%20tekale/MLOPS%20Project/demand-forecasting-mlops/mlruns/546545750025212107/a496694be0cc478688064f7eceece174/artifacts
+end_time: 1778747042600
+entry_point_name: ''
+experiment_id: '546545750025212107'
+lifecycle_stage: active
+run_id: a496694be0cc478688064f7eceece174
+run_name: Prophet
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778747042528
+status: 4
+tags: []
+user_id: narendra tekale

@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Demand Forecasting — MLOps Dashboard</title>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ===== RESET & VARIABLES ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0b0f1a;
+      --bg2:       #111827;
+      --bg3:       #1a2235;
+      --card:      #161d2f;
+      --border:    rgba(255,255,255,0.07);
+      --text:      #e2e8f0;
+      --muted:     #94a3b8;
+      --accent:    #6366f1;
+      --accent2:   #8b5cf6;
+      --green:     #10b981;
+      --yellow:    #f59e0b;
+      --red:       #ef4444;
+      --cyan:      #06b6d4;
+      --grad:      linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+      --shadow:    0 8px 32px rgba(0,0,0,0.4);
+      --radius:    16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+    /* ===== TOPBAR ===== */
+    .topbar {
+      background: rgba(17,24,39,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .topbar-logo {
+      width: 38px; height: 38px;
+      background: var(--grad);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .topbar-title { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
+    .topbar-title span { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .status-badge {
+      display: flex; align-items: center; gap: 7px;
+      background: rgba(16,185,129,0.12);
+      border: 1px solid rgba(16,185,129,0.3);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem; font-weight: 600; color: var(--green);
+    }
+    .status-dot {
+      width: 8px; height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.5; transform: scale(1.3); }
+    }
+    .status-badge.offline {
+      background: rgba(239,68,68,0.12);
+      border-color: rgba(239,68,68,0.3);
+      color: var(--red);
+    }
+    .status-badge.offline .status-dot { background: var(--red); }
+
+    .nav-tabs { display: flex; gap: 4px; }
+    .nav-tab {
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem; font-weight: 500;
+      cursor: pointer; color: var(--muted);
+      border: none; background: transparent;
+      transition: all 0.2s;
+    }
+    .nav-tab:hover { color: var(--text); background: var(--bg3); }
+    .nav-tab.active { color: var(--accent); background: rgba(99,102,241,0.12); }
+
+    /* ===== LAYOUT ===== */
+    .container { max-width: 1400px; margin: 0 auto; padding: 2rem; width: 100%; }
+
+    /* ===== HERO METRICS ===== */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .metric-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.6rem;
+      display: flex; align-items: center; gap: 1rem;
+      position: relative; overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .metric-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(99,102,241,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .metric-card:hover { transform: translateY(-2px); border-color: rgba(99,102,241,0.3); }
+    .metric-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .metric-icon.indigo  { background: rgba(99,102,241,0.15); color: var(--accent); }
+    .metric-icon.green   { background: rgba(16,185,129,0.15);  color: var(--green); }
+    .metric-icon.yellow  { background: rgba(245,158,11,0.15);  color: var(--yellow); }
+    .metric-icon.cyan    { background: rgba(6,182,212,0.15);   color: var(--cyan); }
+    .metric-info { flex: 1; min-width: 0; }
+    .metric-label { font-size: 0.75rem; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-value { font-size: 1.6rem; font-weight: 800; margin: 2px 0; line-height: 1; }
+    .metric-sub   { font-size: 0.75rem; color: var(--muted); }
+
+    /* ===== MAIN GRID ===== */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ===== CARDS ===== */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.6rem;
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.4rem;
+    }
+    .card-title {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1rem; font-weight: 700;
+    }
+    .card-title i { color: var(--accent); }
+
+    /* ===== FORM ===== */
+    .form-group { margin-bottom: 1rem; }
+    .form-label {
+      display: block;
+      font-size: 0.78rem; font-weight: 600;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      padding: 10px 14px;
+      font-size: 0.9rem; font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+    .form-select option { background: var(--bg2); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ===== TOGGLE ===== */
+    .toggle-group { display: flex; gap: 10px; }
+    .toggle-btn {
+      flex: 1; padding: 9px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      color: var(--muted);
+      font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; text-align: center;
+      transition: all 0.2s;
+    }
+    .toggle-btn.active-yes {
+      background: rgba(16,185,129,0.15);
+      border-color: var(--green);
+      color: var(--green);
+    }
+    .toggle-btn.active-no {
+      background: rgba(239,68,68,0.1);
+      border-color: rgba(239,68,68,0.4);
+      color: var(--red);
+    }
+
+    /* ===== PREDICT BUTTON ===== */
+    .btn-predict {
+      width: 100%; margin-top: 1.2rem;
+      padding: 13px;
+      background: var(--grad);
+      border: none; border-radius: var(--radius-sm);
+      color: white; font-size: 1rem; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.3px;
+      transition: opacity 0.2s, transform 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-predict:hover   { opacity: 0.9; transform: translateY(-1px); }
+    .btn-predict:active  { transform: translateY(0); }
+    .btn-predict:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ===== RESULT PANEL ===== */
+    .result-panel {
+      margin-top: 1.2rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1.2rem;
+      display: none;
+    }
+    .result-panel.show { display: block; animation: fadeSlide 0.35s ease; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .result-demand {
+      text-align: center;
+      font-size: 3.2rem; font-weight: 800;
+      background: var(--grad);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+    .result-label { text-align: center; color: var(--muted); font-size: 0.82rem; margin: 4px 0 14px; }
+    .ci-bar-wrap { position: relative; height: 10px; background: var(--bg3); border-radius: 5px; overflow: visible; }
+    .ci-bar      { height: 100%; background: var(--grad); border-radius: 5px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+    .ci-labels   { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.78rem; color: var(--muted); }
+    .result-meta { display: flex; justify-content: space-around; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .result-meta-item { text-align: center; }
+    .result-meta-item .val { font-size: 1rem; font-weight: 700; }
+    .result-meta-item .lbl { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+    /* ===== CHART CARD ===== */
+    .chart-wrap { position: relative; height: 280px; }
+
+    /* ===== HISTORY TABLE ===== */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr { transition: background 0.15s; }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+    tbody td {
+      padding: 11px 14px;
+      font-size: 0.85rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700;
+    }
+    .badge-green  { background: rgba(16,185,129,0.15); color: var(--green); }
+    .badge-red    { background: rgba(239,68,68,0.15);  color: var(--red); }
+    .badge-accent { background: rgba(99,102,241,0.15); color: var(--accent); }
+    .badge-yellow { background: rgba(245,158,11,0.15); color: var(--yellow); }
+
+    /* ===== MODEL INFO ===== */
+    .model-info-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-top: 0;
+    }
+    .model-stat {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .model-stat .val { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+    .model-stat .lbl { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+
+    .model-algo {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-bottom: 14px;
+    }
+    .model-algo-name { font-weight: 700; font-size: 1rem; }
+    .model-algo-tag { font-size: 0.72rem; color: var(--accent); background: rgba(99,102,241,0.15); padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+
+    /* ===== BOTTOM GRID ===== */
+    .bottom-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; }
+
+    /* ===== FEATURE IMPORTANCE ===== */
+    .feat-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .feat-name { font-size: 0.82rem; width: 140px; flex-shrink: 0; color: var(--muted); }
+    .feat-bar-wrap { flex: 1; height: 7px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+    .feat-bar { height: 100%; border-radius: 4px; background: var(--grad); transition: width 1s ease; }
+    .feat-pct { font-size: 0.78rem; font-weight: 600; width: 38px; text-align: right; }
+
+    /* ===== TOAST ===== */
+    .toast-container { position: fixed; top: 76px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+    .toast {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 0.85rem; min-width: 280px;
+      box-shadow: var(--shadow);
+      animation: slideIn 0.3s ease;
+    }
+    .toast.error { border-left-color: var(--red); }
+    .toast.success { border-left-color: var(--green); }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(30px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ===== LOADER ===== */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== SECTION TITLE ===== */
+    .section-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 1.2rem; }
+    .section-title span { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state { text-align: center; padding: 2.5rem; color: var(--muted); }
+    .empty-state i { font-size: 2rem; margin-bottom: 10px; display: block; opacity: 0.4; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1100px) {
+      .main-grid   { grid-template-columns: 1fr; }
+      .bottom-grid { grid-template-columns: 1fr; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .metrics-grid { grid-template-columns: 1fr; }
+      .container    { padding: 1rem; }
+      .nav-tabs     { display: none; }
+    }
+
+    /* ===== PAGE SECTIONS ===== */
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ===== GRADIENT TEXT ===== */
+    .grad-text { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* ===== DIVIDER ===== */
+    .divider { height: 1px; background: var(--border); margin: 1rem 0; }
+
+    /* ===== TIPS ===== */
+    .tip {
+      background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .tip i { color: var(--accent); margin-right: 6px; }
+
+    /* ===== REFRESH BTN ===== */
+    .btn-icon {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .btn-icon:hover { color: var(--accent); border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- ========== TOAST CONTAINER ========== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ========== TOPBAR ========== -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">📈</div>
+    <div>
+      <div class="topbar-title"><span>Demand Forecasting</span> MLOps </div>
+    </div>
+  </div>
+
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard', this)"><i class="fa fa-chart-line"></i> Dashboard</button>
+    <button class="nav-tab" onclick="showPage('predict', this)"><i class="fa fa-magic"></i> Predict</button>
+    <button class="nav-tab" onclick="showPage('history', this)"><i class="fa fa-history"></i> History</button>
+    <button class="nav-tab" onclick="showPage('model', this)"><i class="fa fa-brain"></i> Model</button>
+  </nav>
+
+  <div class="topbar-right">
+    <div class="status-badge offline" id="statusBadge">
+      <div class="status-dot"></div>
+      <span id="statusText">Connecting…</span>
+    </div>
+  </div>
+</header>
+
+<!-- ========== MAIN ========== -->
+<main class="container">
+
+  <!-- ===== DASHBOARD PAGE ===== -->
+  <div class="page active" id="page-dashboard">
+
+    <!-- Metrics Row -->
+    <div class="metrics-grid" id="metricsGrid">
+      <div class="metric-card">
+        <div class="metric-icon indigo"><i class="fa fa-bolt"></i></div>
+        <div class="metric-info">
+          <div class="metric-label">Best Model</div>
+          <div class="metric-value" id="m-model" style="font-size:1.1rem;margin-top:6px">—</div>
+          <div class="metric-sub">Active in production</div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon green"><i class="fa fa-bullseye"></i></div>
+        <div class="metric-info">
+          <div class="metric-label">R² Score</div>
+          <div class="metric-value" id="m-r2">—</div>
+          <div class="metric-sub">Variance explained</div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon yellow"><i class="fa fa-chart-bar"></i></div>
+        <div class="metric-info">
+          <div class="metric-label">RMSE</div>
+          <div class="metric-value" id="m-rmse">—</div>
+          <div class="metric-sub">Root mean sq. error</div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon cyan"><i class="fa fa-percent"></i></div>
+        <div class="metric-info">
+          <div class="metric-label">MAPE</div>
+          <div class="metric-value" id="m-mape">—</div>
+          <div class="metric-sub">Mean abs. pct. error</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+
+      <!-- Quick Predict -->
+      <div class="card" id="quickPredictCard">
+        <div class="card-header">
+          <div class="card-title"><i class="fa fa-magic"></i> Quick Predict</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Product ID</label>
+            <input class="form-input" id="q-product" value="P001" placeholder="P001"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Store ID</label>
+            <input class="form-input" id="q-store" value="S01" placeholder="S01"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Forecast Date</label>
+          <input class="form-input" type="date" id="q-date"/>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Promotion</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-yes" id="q-promo-yes" onclick="setToggle('q-promo', 1)">✓ Yes</button>
+              <button class="toggle-btn" id="q-promo-no"  onclick="setToggle('q-promo', 0)">✗ No</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Holiday</label>
+            <div class="toggle-group">
+              <button class="toggle-btn" id="q-holiday-yes" onclick="setToggle('q-holiday', 1)">✓ Yes</button>
+              <button class="toggle-btn active-no" id="q-holiday-no" onclick="setToggle('q-holiday', 0)">✗ No</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-predict" id="quickPredictBtn" onclick="quickPredict()">
+          <i class="fa fa-bolt"></i> Generate Forecast
+        </button>
+
+        <!-- Result -->
+        <div class="result-panel" id="quickResult">
+          <div class="result-demand" id="qr-demand">—</div>
+          <div class="result-label">Predicted Units</div>
+          <div class="ci-bar-wrap">
+            <div class="ci-bar" id="qr-bar" style="width:0%"></div>
+          </div>
+          <div class="ci-labels">
+            <span id="qr-ci-lo">—</span>
+            <span style="color:var(--accent);font-weight:600">Confidence Interval</span>
+            <span id="qr-ci-hi">—</span>
+          </div>
+          <div class="result-meta">
+            <div class="result-meta-item">
+              <div class="val" id="qr-model">—</div>
+              <div class="lbl">Model</div>
+            </div>
+            <div class="result-meta-item">
+              <div class="val grad-text" id="qr-range">—</div>
+              <div class="lbl">Range (units)</div>
+            </div>
+            <div class="result-meta-item">
+              <div class="val" id="qr-time">—</div>
+              <div class="lbl">Response (ms)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip"><i class="fa fa-lightbulb"></i>Lag features (7/14/28-day) are zeroed at inference time. For production use, wire up a feature store for live lag lookups.</div>
+      </div>
+
+      <!-- History Chart -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fa fa-chart-area"></i> Prediction History</div>
+          <button class="btn-icon" onclick="loadHistory(); loadChart()" title="Refresh"><i class="fa fa-sync"></i></button>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="historyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Grid -->
+    <div class="bottom-grid">
+
+      <!-- Recent predictions table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fa fa-table"></i> Recent Predictions</div>
+          <button class="btn-icon" onclick="loadHistory()" title="Refresh"><i class="fa fa-sync"></i></button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Product</th><th>Store</th><th>Date</th>
+                <th>Promo</th><th>Holiday</th><th>Demand</th><th>CI Range</th>
+              </tr>
+            </thead>
+            <tbody id="recentTbody">
+              <tr><td colspan="8"><div class="empty-state"><i class="fa fa-database"></i>No predictions yet</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Model Info -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fa fa-brain"></i> Model Info</div>
+        </div>
+        <div class="model-algo" id="modelAlgoBox">
+          <div>
+            <div class="model-algo-name" id="mi-name">Loading…</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:3px">Production model</div>
+          </div>
+          <div class="model-algo-tag">PRODUCTION</div>
+        </div>
+        <div class="model-info-grid">
+          <div class="model-stat"><div class="val" id="mi-r2">—</div><div class="lbl">R² Score</div></div>
+          <div class="model-stat"><div class="val" id="mi-rmse">—</div><div class="lbl">RMSE</div></div>
+          <div class="model-stat"><div class="val" id="mi-mae">—</div><div class="lbl">MAE</div></div>
+          <div class="model-stat"><div class="val" id="mi-mape">—</div><div class="lbl">MAPE %</div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="card-title" style="margin-bottom:12px"><i class="fa fa-star"></i> Top Features</div>
+        <div id="featImportance">
+          <div class="feat-item"><span class="feat-name">lag_7</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:88%"></div></div><span class="feat-pct">88%</span></div>
+          <div class="feat-item"><span class="feat-name">rolling_mean_7</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:74%"></div></div><span class="feat-pct">74%</span></div>
+          <div class="feat-item"><span class="feat-name">lag_14</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:65%"></div></div><span class="feat-pct">65%</span></div>
+          <div class="feat-item"><span class="feat-name">rolling_mean_14</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:52%"></div></div><span class="feat-pct">52%</span></div>
+          <div class="feat-item"><span class="feat-name">is_promotion</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:41%"></div></div><span class="feat-pct">41%</span></div>
+          <div class="feat-item"><span class="feat-name">month_sin</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:30%"></div></div><span class="feat-pct">30%</span></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /dashboard -->
+
+  <!-- ===== PREDICT PAGE ===== -->
+  <div class="page" id="page-predict">
+    <div class="section-title">🔮 <span>Demand Forecasting</span></div>
+    <div class="main-grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fa fa-sliders"></i> Prediction Inputs</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Product ID</label>
+          <input class="form-input" id="p-product" value="P001" placeholder="e.g. P001"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Store ID</label>
+          <input class="form-input" id="p-store" value="S01" placeholder="e.g. S01"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Forecast Date</label>
+          <input class="form-input" type="date" id="p-date"/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Promotion Active?</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active-yes" id="p-promo-yes" onclick="setToggle('p-promo',1)">✓ Yes</button>
+              <button class="toggle-btn" id="p-promo-no" onclick="setToggle('p-promo',0)">✗ No</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Public Holiday?</label>
+            <div class="toggle-group">
+              <button class="toggle-btn" id="p-holiday-yes" onclick="setToggle('p-holiday',1)">✓ Yes</button>
+              <button class="toggle-btn active-no" id="p-holiday-no" onclick="setToggle('p-holiday',0)">✗ No</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-predict" id="predictBtn" onclick="runPredict()">
+          <i class="fa fa-bolt"></i> Run Prediction
+        </button>
+      </div>
+
+      <div class="card" id="predictResultCard">
+        <div class="card-header">
+          <div class="card-title"><i class="fa fa-chart-bar"></i> Forecast Result</div>
+        </div>
+        <div id="predictResultInner" style="display:flex;align-items:center;justify-content:center;height:260px;color:var(--muted);flex-direction:column;gap:12px">
+          <i class="fa fa-magic" style="font-size:2.5rem;opacity:0.2"></i>
+          <p>Fill the form and click <strong>Run Prediction</strong></p>
+        </div>
+      </div>
+    </div>
+  </div><!-- /predict -->
+
+  <!-- ===== HISTORY PAGE ===== -->
+  <div class="page" id="page-history">
+    <div class="section-title">📋 <span>Prediction History</span></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="fa fa-database"></i> All Predictions</div>
+        <button class="btn-icon" onclick="loadHistory(true)" title="Refresh"><i class="fa fa-sync"></i></button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Product</th><th>Store</th><th>Date</th><th>Promo</th><th>Holiday</th><th>Demand</th><th>CI Low</th><th>CI High</th><th>Model</th><th>Timestamp</th></tr>
+          </thead>
+          <tbody id="historyTbody">
+            <tr><td colspan="11"><div class="empty-state"><i class="fa fa-database"></i>Loading…</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /history -->
+
+  <!-- ===== MODEL PAGE ===== -->
+  <div class="page" id="page-model">
+    <div class="section-title">🧠 <span>Model Registry</span></div>
+    <div class="main-grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fa fa-info-circle"></i> Model Details</div>
+        </div>
+        <div class="model-algo">
+          <div>
+            <div class="model-algo-name" id="mm-name">Loading…</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:3px" id="mm-source">source: local_pkl</div>
+          </div>
+          <div class="model-algo-tag">PRODUCTION</div>
+        </div>
+        <div class="model-info-grid" style="grid-template-columns:repeat(2,1fr)">
+          <div class="model-stat"><div class="val" id="mm-r2">—</div><div class="lbl">R² Score</div></div>
+          <div class="model-stat"><div class="val" id="mm-rmse">—</div><div class="lbl">RMSE</div></div>
+          <div class="model-stat"><div class="val" id="mm-mae">—</div><div class="lbl">MAE</div></div>
+          <div class="model-stat"><div class="val" id="mm-mape">—</div><div class="lbl">MAPE %</div></div>
+        </div>
+        <div class="divider"></div>
+        <div style="font-size:0.85rem;color:var(--muted);line-height:1.8">
+          <p><i class="fa fa-check-circle" style="color:var(--green)"></i> &nbsp;Registered: <strong>demand-forecast-model</strong></p>
+          <p><i class="fa fa-check-circle" style="color:var(--green)"></i> &nbsp;Stage: <strong>Production</strong></p>
+          <p><i class="fa fa-check-circle" style="color:var(--green)"></i> &nbsp;Tracking: <strong>MLflow (local)</strong></p>
+          <p><i class="fa fa-check-circle" style="color:var(--green)"></i> &nbsp;Autolog: <strong>sklearn + xgboost</strong></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fa fa-list"></i> Models Trained</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="model-algo" style="margin-bottom:0">
+            <div><div class="model-algo-name">XGBoost <small style="color:var(--green);font-size:0.75rem">★ Best</small></div><div style="font-size:0.75rem;color:var(--muted)">Gradient boosting — lowest RMSE</div></div>
+            <div class="model-algo-tag">RMSE 51.54</div>
+          </div>
+          <div class="model-algo" style="margin-bottom:0;opacity:0.7">
+            <div><div class="model-algo-name">Random Forest</div><div style="font-size:0.75rem;color:var(--muted)">Ensemble — strong generalization</div></div>
+            <div class="model-algo-tag" style="background:rgba(245,158,11,.12);color:var(--yellow)">RMSE 60.21</div>
+          </div>
+          <div class="model-algo" style="margin-bottom:0;opacity:0.7">
+            <div><div class="model-algo-name">Linear Regression</div><div style="font-size:0.75rem;color:var(--muted)">Baseline — interpretable</div></div>
+            <div class="model-algo-tag" style="background:rgba(239,68,68,.1);color:var(--red)">RMSE 61.95</div>
+          </div>
+          <div class="model-algo" style="margin-bottom:0;opacity:0.7">
+            <div><div class="model-algo-name">Prophet</div><div style="font-size:0.75rem;color:var(--muted)">Time-series — aggregated sales</div></div>
+            <div class="model-algo-tag" style="background:rgba(239,68,68,.1);color:var(--red)">Agg only</div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="card-title" style="margin-bottom:12px"><i class="fa fa-star"></i> Feature Importances</div>
+        <div id="featImportance2">
+          <div class="feat-item"><span class="feat-name">lag_7</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:88%"></div></div><span class="feat-pct">88%</span></div>
+          <div class="feat-item"><span class="feat-name">rolling_mean_7</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:74%"></div></div><span class="feat-pct">74%</span></div>
+          <div class="feat-item"><span class="feat-name">lag_14</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:65%"></div></div><span class="feat-pct">65%</span></div>
+          <div class="feat-item"><span class="feat-name">rolling_mean_14</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:52%"></div></div><span class="feat-pct">52%</span></div>
+          <div class="feat-item"><span class="feat-name">is_promotion</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:41%"></div></div><span class="feat-pct">41%</span></div>
+          <div class="feat-item"><span class="feat-name">month_sin</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:30%"></div></div><span class="feat-pct">30%</span></div>
+          <div class="feat-item"><span class="feat-name">is_weekend</span><div class="feat-bar-wrap"><div class="feat-bar" style="width:22%"></div></div><span class="feat-pct">22%</span></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /model -->
+
+</main>
+
+<!-- ========== JAVASCRIPT ========== -->
+<script>
+const API = 'http://localhost:8000';
+
+// Toggle state
+const toggleState = {
+  'q-promo': 1, 'q-holiday': 0,
+  'p-promo': 1, 'p-holiday': 0
+};
+
+function setToggle(key, val) {
+  toggleState[key] = val;
+  const yesBtn = document.getElementById(key + '-yes');
+  const noBtn  = document.getElementById(key + '-no');
+  yesBtn.className = 'toggle-btn' + (val ? ' active-yes' : '');
+  noBtn.className  = 'toggle-btn' + (!val ? ' active-no'  : '');
+}
+
+// Set default date to today
+(function() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('q-date').value = today;
+  document.getElementById('p-date').value = today;
+})();
+
+// ---- PAGE NAVIGATION ----
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'history') loadHistory(true);
+}
+
+// ---- TOAST ----
+function toast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i class="fa fa-${type==='error'?'circle-xmark':'check-circle'}" style="margin-right:8px"></i>${msg}`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(()=>t.remove(),400); }, 3500);
+}
+
+// ---- HEALTH CHECK ----
+async function checkHealth() {
+  const badge = document.getElementById('statusBadge');
+  const text  = document.getElementById('statusText');
+  try {
+    const r = await fetch(`${API}/health`, {signal: AbortSignal.timeout(4000)});
+    const d = await r.json();
+    if (d.status === 'ok') {
+      badge.className = 'status-badge';
+      text.textContent = 'API Online';
+    }
+  } catch {
+    badge.className = 'status-badge offline';
+    text.textContent = 'API Offline';
+  }
+}
+
+// ---- MODEL INFO ----
+async function loadModelInfo() {
+  try {
+    const r = await fetch(`${API}/model-info`);
+    const d = await r.json();
+    const name = d.model_name || '—';
+    const m    = d.metrics || {};
+
+    // Dashboard metrics bar
+    document.getElementById('m-model').textContent = name;
+    document.getElementById('m-r2').textContent   = m.r2 != null   ? m.r2.toFixed(4)   : '—';
+    document.getElementById('m-rmse').textContent = m.rmse != null  ? m.rmse.toFixed(2)  : '—';
+    document.getElementById('m-mape').textContent = m.mape != null  ? m.mape.toFixed(1)+'%' : '—';
+
+    // Side panel
+    ['mi','mm'].forEach(pref => {
+      const el = document.getElementById(pref+'-name');
+      if (el) el.textContent = name;
+    });
+    ['r2','rmse','mae','mape'].forEach(k => {
+      ['mi','mm'].forEach(pref => {
+        const el = document.getElementById(`${pref}-${k}`);
+        if (el) el.textContent = m[k] != null ? (k==='r2' ? m[k].toFixed(4) : k==='mape' ? m[k].toFixed(1)+'%' : m[k].toFixed(2)) : '—';
+      });
+    });
+
+    const src = document.getElementById('mm-source');
+    if (src) src.textContent = `source: ${d.source || 'local_pkl'}`;
+  } catch {}
+}
+
+// ---- HISTORY TABLE ----
+let historyData = [];
+
+async function loadHistory(full=false) {
+  try {
+    const r = await fetch(`${API}/predictions/history?limit=50`);
+    historyData = await r.json();
+
+    // Recent table (dashboard)
+    const tbody = document.getElementById('recentTbody');
+    if (tbody) {
+      tbody.innerHTML = historyData.length === 0
+        ? `<tr><td colspan="8"><div class="empty-state"><i class="fa fa-database"></i>No predictions yet. Run a forecast!</div></td></tr>`
+        : historyData.slice(0,8).map(row => `
+            <tr>
+              <td style="color:var(--muted);font-size:0.75rem">#${row.id}</td>
+              <td><span class="badge badge-accent">${row.product_id}</span></td>
+              <td>${row.store_id}</td>
+              <td style="font-size:0.8rem">${row.date}</td>
+              <td>${row.promotion ? '<span class="badge badge-green">Yes</span>' : '<span class="badge badge-red">No</span>'}</td>
+              <td>${row.holiday  ? '<span class="badge badge-yellow">Yes</span>' : '<span class="badge badge-red">No</span>'}</td>
+              <td><strong>${Math.round(row.predicted_demand)}</strong></td>
+              <td style="color:var(--muted);font-size:0.8rem">${row.confidence_interval?.[0]??'—'} – ${row.confidence_interval?.[1]??'—'}</td>
+            </tr>`).join('');
+    }
+
+    // Full history page
+    if (full) {
+      const htbody = document.getElementById('historyTbody');
+      if (htbody) {
+        htbody.innerHTML = historyData.length === 0
+          ? `<tr><td colspan="11"><div class="empty-state"><i class="fa fa-database"></i>No predictions yet</div></td></tr>`
+          : historyData.map(row => `
+              <tr>
+                <td style="color:var(--muted);font-size:0.75rem">#${row.id}</td>
+                <td><span class="badge badge-accent">${row.product_id}</span></td>
+                <td>${row.store_id}</td>
+                <td style="font-size:0.8rem">${row.date}</td>
+                <td>${row.promotion ? '<span class="badge badge-green">Yes</span>' : '<span class="badge badge-red">No</span>'}</td>
+                <td>${row.holiday  ? '<span class="badge badge-yellow">Yes</span>' : '<span class="badge badge-red">No</span>'}</td>
+                <td><strong>${Math.round(row.predicted_demand)}</strong></td>
+                <td style="font-size:0.8rem">${row.confidence_interval?.[0]??'—'}</td>
+                <td style="font-size:0.8rem">${row.confidence_interval?.[1]??'—'}</td>
+                <td><span class="badge badge-accent">${row.model||'—'}</span></td>
+                <td style="font-size:0.75rem;color:var(--muted)">${row.timestamp ? new Date(row.timestamp).toLocaleString() : '—'}</td>
+              </tr>`).join('');
+      }
+    }
+
+    loadChart();
+  } catch(e) {
+    console.warn('History load failed:', e);
+  }
+}
+
+// ---- CHART ----
+let chartInst = null;
+
+function loadChart() {
+  const ctx = document.getElementById('historyChart');
+  if (!ctx) return;
+
+  const data = [...historyData].reverse().slice(-30);
+  const labels  = data.map((r,i) => `#${r.id}`);
+  const demands = data.map(r => r.predicted_demand);
+  const ciLo    = data.map(r => r.confidence_interval?.[0] ?? r.predicted_demand);
+  const ciHi    = data.map(r => r.confidence_interval?.[1] ?? r.predicted_demand);
+
+  if (chartInst) chartInst.destroy();
+
+  chartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Predicted Demand',
+          data: demands,
+          borderColor: '#6366f1',
+          backgroundColor: 'rgba(99,102,241,0.1)',
+          borderWidth: 2.5,
+          pointRadius: 4,
+          pointBackgroundColor: '#6366f1',
+          tension: 0.4,
+          fill: false,
+        },
+        {
+          label: 'CI Upper',
+          data: ciHi,
+          borderColor: 'rgba(99,102,241,0.25)',
+          backgroundColor: 'rgba(99,102,241,0.07)',
+          borderWidth: 1,
+          borderDash: [4,3],
+          pointRadius: 0,
+          tension: 0.4,
+          fill: '+1',
+        },
+        {
+          label: 'CI Lower',
+          data: ciLo,
+          borderColor: 'rgba(99,102,241,0.25)',
+          borderWidth: 1,
+          borderDash: [4,3],
+          pointRadius: 0,
+          tension: 0.4,
+          fill: false,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12 },
+          position: 'top',
+        },
+        tooltip: {
+          backgroundColor: '#1a2235',
+          borderColor: 'rgba(255,255,255,0.08)',
+          borderWidth: 1,
+          titleColor: '#e2e8f0',
+          bodyColor: '#94a3b8',
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#94a3b8', font: { size: 10 } },
+          grid:  { color: 'rgba(255,255,255,0.04)' },
+        },
+        y: {
+          ticks: { color: '#94a3b8', font: { size: 11 } },
+          grid:  { color: 'rgba(255,255,255,0.06)' },
+        }
+      }
+    }
+  });
+}
+
+// ---- QUICK PREDICT (Dashboard) ----
+async function quickPredict() {
+  const btn = document.getElementById('quickPredictBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Forecasting…';
+
+  const t0 = Date.now();
+  const payload = {
+    product_id: document.getElementById('q-product').value.trim() || 'P001',
+    store_id:   document.getElementById('q-store').value.trim()   || 'S01',
+    date:       document.getElementById('q-date').value,
+    promotion:  toggleState['q-promo'],
+    holiday:    toggleState['q-holiday'],
+  };
+
+  try {
+    const r = await fetch(`${API}/predict`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const d = await r.json();
+    const elapsed = Date.now() - t0;
+
+    const panel = document.getElementById('quickResult');
+    panel.classList.add('show');
+
+    document.getElementById('qr-demand').textContent = d.predicted_demand.toLocaleString();
+    document.getElementById('qr-model').textContent  = d.model;
+    document.getElementById('qr-time').textContent   = elapsed + 'ms';
+
+    const lo = d.confidence_interval[0], hi = d.confidence_interval[1];
+    document.getElementById('qr-ci-lo').textContent = lo.toLocaleString();
+    document.getElementById('qr-ci-hi').textContent = hi.toLocaleString();
+    document.getElementById('qr-range').textContent = `${(hi-lo).toLocaleString()}`;
+
+    // Animate bar: bar width = demand / (hi * 1.2) * 100
+    setTimeout(() => {
+      const pct = Math.min(100, (d.predicted_demand / (hi * 1.2)) * 100);
+      document.getElementById('qr-bar').style.width = pct + '%';
+    }, 50);
+
+    toast('Forecast generated!', 'success');
+    loadHistory();
+  } catch(e) {
+    toast('Prediction failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa fa-bolt"></i> Generate Forecast';
+  }
+}
+
+// ---- FULL PREDICT (Predict Page) ----
+async function runPredict() {
+  const btn = document.getElementById('predictBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Running…';
+
+  const t0 = Date.now();
+  const payload = {
+    product_id: document.getElementById('p-product').value.trim() || 'P001',
+    store_id:   document.getElementById('p-store').value.trim()   || 'S01',
+    date:       document.getElementById('p-date').value,
+    promotion:  toggleState['p-promo'],
+    holiday:    toggleState['p-holiday'],
+  };
+
+  try {
+    const r = await fetch(`${API}/predict`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const d = await r.json();
+    const elapsed = Date.now() - t0;
+
+    const lo = d.confidence_interval[0], hi = d.confidence_interval[1];
+
+    document.getElementById('predictResultInner').innerHTML = `
+      <div style="text-align:center;padding:1rem">
+        <div style="font-size:0.85rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Predicted Demand</div>
+        <div style="font-size:4.5rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1">${d.predicted_demand.toLocaleString()}</div>
+        <div style="color:var(--muted);margin-bottom:24px">units</div>
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px">
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">95% Confidence Interval</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:1.1rem;font-weight:700">${lo.toLocaleString()}</span>
+            <div style="flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden">
+              <div style="height:100%;background:var(--grad);border-radius:4px;width:${Math.min(100,(d.predicted_demand/(hi*1.2))*100)}%"></div>
+            </div>
+            <span style="font-size:1.1rem;font-weight:700">${hi.toLocaleString()}</span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px">
+            <div style="font-size:1rem;font-weight:700;color:var(--accent)">${d.model}</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:3px">Model used</div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px">
+            <div style="font-size:1rem;font-weight:700">${(hi-lo).toLocaleString()}</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:3px">CI Range (units)</div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px">
+            <div style="font-size:1rem;font-weight:700">${elapsed}ms</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:3px">Response time</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+          <span class="badge badge-${payload.promotion ? 'green' : 'red'}">${payload.promotion ? '✓ Promotion Active' : '✗ No Promotion'}</span>
+          <span class="badge badge-${payload.holiday  ? 'yellow': 'red'}">${payload.holiday  ? '✓ Holiday' : '✗ Non-Holiday'}</span>
+          <span class="badge badge-accent">📅 ${payload.date}</span>
+        </div>
+      </div>`;
+
+    toast('Forecast ready!', 'success');
+    loadHistory();
+  } catch(e) {
+    toast('Prediction failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa fa-bolt"></i> Run Prediction';
+  }
+}
+
+// ---- INIT ----
+(async function init() {
+  await checkHealth();
+  await loadModelInfo();
+  await loadHistory();
+  setInterval(checkHealth, 15000);
+})();
+</script>
+</body>
+</html>

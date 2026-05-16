@@ -1,0 +1,23 @@
+artifact_path: file:///C:/Users/narendra%20tekale/MLOPS%20Project/demand-forecasting-mlops/mlruns/546545750025212107/models/m-b10e68d595eb40c697956c95618e3f40/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.13.5
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.7.0
+    skops_trusted_types: null
+mlflow_version: 3.12.0
+model_id: m-b10e68d595eb40c697956c95618e3f40
+model_size_bytes: 1756
+model_uuid: m-b10e68d595eb40c697956c95618e3f40
+prompts: null
+run_id: c375e0cc41c443e2a4ca0da9b4089323
+utc_time_created: '2026-05-14 08:22:21.351106'

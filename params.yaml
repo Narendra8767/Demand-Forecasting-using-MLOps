@@ -1,0 +1,28 @@
+data:
+  test_size: 0.2
+  target_column: "Sales"
+  date_column: "Date"
+  raw_path: "data/raw/sales_data.csv"
+  processed_path: "data/processed/processed_data.csv"
+  features_path: "data/processed/features.csv"
+
+model:
+  n_estimators: 200
+  max_depth: 6
+  learning_rate: 0.05
+  random_state: 42
+  prophet_changepoint_prior_scale: 0.05
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  db_path: "data/predictions.db"
+
+mlflow:
+  tracking_uri: "mlruns"
+  experiment_name: "demand-forecasting"
+  model_name: "demand-forecast-model"
+
+monitoring:
+  drift_threshold: 0.3
+  report_path: "reports/monitoring_report.html"

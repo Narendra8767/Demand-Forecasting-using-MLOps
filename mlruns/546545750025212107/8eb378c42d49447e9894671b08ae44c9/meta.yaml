@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/narendra%20tekale/MLOPS%20Project/demand-forecasting-mlops/mlruns/546545750025212107/8eb378c42d49447e9894671b08ae44c9/artifacts
+end_time: 1778747081856
+entry_point_name: ''
+experiment_id: '546545750025212107'
+lifecycle_stage: active
+run_id: 8eb378c42d49447e9894671b08ae44c9
+run_name: LinearRegression
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778747076473
+status: 3
+tags: []
+user_id: narendra tekale

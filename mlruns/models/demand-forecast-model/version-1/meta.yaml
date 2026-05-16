@@ -1,0 +1,16 @@
+creation_timestamp: 1778747152187
+current_stage: Production
+deployment_job_state: null
+description: null
+last_updated_timestamp: 1778747152227
+model_id: null
+name: demand-forecast-model
+run_id: 44ccee7589d34f229711c5b75c8c9184
+run_link: null
+source: runs:/44ccee7589d34f229711c5b75c8c9184/model
+status: READY
+status_message: null
+storage_location: runs:/44ccee7589d34f229711c5b75c8c9184/model
+user_id: null
+version: 1
+workspace: default

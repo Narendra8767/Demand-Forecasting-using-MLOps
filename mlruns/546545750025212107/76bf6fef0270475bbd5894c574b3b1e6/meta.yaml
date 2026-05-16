@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/narendra%20tekale/MLOPS%20Project/demand-forecasting-mlops/mlruns/546545750025212107/76bf6fef0270475bbd5894c574b3b1e6/artifacts
+end_time: 1778747075624
+entry_point_name: ''
+experiment_id: '546545750025212107'
+lifecycle_stage: active
+run_id: 76bf6fef0270475bbd5894c574b3b1e6
+run_name: angry-yak-787
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778747062064
+status: 3
+tags: []
+user_id: narendra tekale

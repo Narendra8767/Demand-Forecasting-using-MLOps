@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/narendra%20tekale/MLOPS%20Project/demand-forecasting-mlops/mlruns/546545750025212107/97356e9d7445485faaebfb086af6c1e9/artifacts
+end_time: 1778747013986
+entry_point_name: ''
+experiment_id: '546545750025212107'
+lifecycle_stage: active
+run_id: 97356e9d7445485faaebfb086af6c1e9
+run_name: judicious-carp-749
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778746970561
+status: 3
+tags: []
+user_id: narendra tekale

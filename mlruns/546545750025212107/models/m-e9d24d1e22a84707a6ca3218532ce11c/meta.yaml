@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/narendra%20tekale/MLOPS%20Project/demand-forecasting-mlops/mlruns/546545750025212107/models/m-e9d24d1e22a84707a6ca3218532ce11c/artifacts
+creation_timestamp: 1778747034485
+experiment_id: '546545750025212107'
+last_updated_timestamp: 1778747041411
+model_id: m-e9d24d1e22a84707a6ca3218532ce11c
+model_type: null
+name: model
+source_run_id: 4c4e79d0ba484cfb9e8076e9a749c605
+status: 2
+status_message: null

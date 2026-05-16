@@ -1,0 +1,9 @@
+# Ignore raw and processed data files (tracked by DVC)
+raw/*.csv
+raw/*.parquet
+processed/*.csv
+processed/*.parquet
+*.db
+
+# Keep directory structure
+!.gitignore

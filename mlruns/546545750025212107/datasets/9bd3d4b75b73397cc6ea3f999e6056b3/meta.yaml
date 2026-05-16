@@ -1,0 +1,36 @@
+digest: 5e340ba1
+name: dataset
+profile: '{"num_rows": 29088, "num_elements": 1250784}'
+schema: '{"mlflow_colspec": [{"type": "double", "name": "Customers", "required": true},
+  {"type": "long", "name": "Promo", "required": true}, {"type": "long", "name": "SchoolHoliday",
+  "required": true}, {"type": "long", "name": "CompetitionDistance", "required": true},
+  {"type": "long", "name": "Store_S01", "required": true}, {"type": "long", "name":
+  "Store_S02", "required": true}, {"type": "long", "name": "Store_S03", "required":
+  true}, {"type": "long", "name": "Store_S04", "required": true}, {"type": "long",
+  "name": "Store_S05", "required": true}, {"type": "long", "name": "Store_S06", "required":
+  true}, {"type": "long", "name": "Store_S07", "required": true}, {"type": "long",
+  "name": "Store_S08", "required": true}, {"type": "long", "name": "Store_S09", "required":
+  true}, {"type": "long", "name": "Store_S10", "required": true}, {"type": "long",
+  "name": "StoreType_a", "required": true}, {"type": "long", "name": "StoreType_b",
+  "required": true}, {"type": "long", "name": "StoreType_c", "required": true}, {"type":
+  "long", "name": "StoreType_d", "required": true}, {"type": "long", "name": "Assortment_a",
+  "required": true}, {"type": "long", "name": "Assortment_b", "required": true}, {"type":
+  "long", "name": "Assortment_c", "required": true}, {"type": "long", "name": "day_of_week",
+  "required": true}, {"type": "long", "name": "day_of_month", "required": true}, {"type":
+  "long", "name": "month", "required": true}, {"type": "long", "name": "quarter",
+  "required": true}, {"type": "long", "name": "week_of_year", "required": true}, {"type":
+  "long", "name": "year", "required": true}, {"type": "long", "name": "is_weekend",
+  "required": true}, {"type": "long", "name": "is_month_start", "required": true},
+  {"type": "long", "name": "is_month_end", "required": true}, {"type": "double", "name":
+  "month_sin", "required": true}, {"type": "double", "name": "month_cos", "required":
+  true}, {"type": "double", "name": "dow_sin", "required": true}, {"type": "double",
+  "name": "dow_cos", "required": true}, {"type": "double", "name": "lag_7", "required":
+  true}, {"type": "double", "name": "lag_14", "required": true}, {"type": "double",
+  "name": "lag_28", "required": true}, {"type": "double", "name": "rolling_mean_7",
+  "required": true}, {"type": "double", "name": "rolling_mean_14", "required": true},
+  {"type": "double", "name": "rolling_std_7", "required": true}, {"type": "long",
+  "name": "is_holiday", "required": true}, {"type": "long", "name": "is_promotion",
+  "required": true}, {"type": "long", "name": "Product_enc", "required": true}]}'
+source: '{"tags": {"mlflow.user": "narendra tekale", "mlflow.source.name": "src/models/train.py",
+  "mlflow.source.type": "LOCAL"}}'
+source_type: code

@@ -1,0 +1,22 @@
+artifact_path: file:///C:/Users/narendra%20tekale/MLOPS%20Project/demand-forecasting-mlops/mlruns/546545750025212107/models/m-0ffe9a3e07354ebf8eab61ce95fa80de/artifacts
+flavors:
+  python_function:
+    data: model.ubj
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.xgboost
+    python_version: 3.13.5
+  xgboost:
+    code: null
+    data: model.ubj
+    model_class: xgboost.sklearn.XGBRegressor
+    model_format: ubj
+    xgb_version: 3.2.0
+mlflow_version: 3.12.0
+model_id: m-0ffe9a3e07354ebf8eab61ce95fa80de
+model_size_bytes: 991894
+model_uuid: m-0ffe9a3e07354ebf8eab61ce95fa80de
+prompts: null
+run_id: 0e14de8fb5ac498a8bd3588f562e01cf
+utc_time_created: '2026-05-14 08:23:47.196614'
